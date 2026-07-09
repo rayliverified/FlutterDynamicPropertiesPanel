@@ -1,18 +1,18 @@
-/// Soft SaaS UI Rich Text Toolbar — the kitchen sink of inline-formatting
-/// buttons for [SoftSaaSRichTextField] / [TextfEditingController].
-///
-/// Because `textf` stores formatting as Markdown markers in plain text,
-/// each toolbar button is a *wrap toggle*: it inserts (or removes) a pair
-/// of markers around the current selection. Active state is detected by
-/// peeking at the characters immediately surrounding the selection.
-///
-/// Variants:
-///   * `mini`: undo/redo + core inline buttons + overflow menu
-///   * `full`: everything in mini, plus highlight + clear formatting section
-///
-/// Block-level formatting (headings, lists, color) is deliberately
-/// **not** included — `textf` is inline-only. Use AppFlowy for block
-/// editors.
+// Soft SaaS UI Rich Text Toolbar — the kitchen sink of inline-formatting
+// buttons for [SoftSaaSRichTextField] / [TextfEditingController].
+//
+// Because `textf` stores formatting as Markdown markers in plain text,
+// each toolbar button is a *wrap toggle*: it inserts (or removes) a pair
+// of markers around the current selection. Active state is detected by
+// peeking at the characters immediately surrounding the selection.
+//
+// Variants:
+//   * `mini`: undo/redo + core inline buttons + overflow menu
+//   * `full`: everything in mini, plus highlight + clear formatting section
+//
+// Block-level formatting (headings, lists, color) is deliberately
+// **not** included — `textf` is inline-only. Use AppFlowy for block
+// editors.
 library;
 
 import 'package:flutter/gestures.dart';

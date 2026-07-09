@@ -1,6 +1,6 @@
-/// Inspector-style Rotation picker — compact number input with ° suffix and a
-/// triangle dropdown exposing common angle presets (0/45/90/135/180/…).
-/// A small circle dial left of the input previews the current angle.
+// Inspector-style Rotation picker — compact number input with ° suffix and a
+// triangle dropdown exposing common angle presets (0/45/90/135/180/…).
+// A small circle dial left of the input previews the current angle.
 library;
 
 import 'dart:math' as math;

@@ -1,10 +1,10 @@
-/// Soft SaaS UI Button Components
-///
-/// This file implements all button variants from the Soft SaaS UI design system:
-/// - SoftSaaSButton: Main button component (Primary, Secondary, Tertiary, Outline, Ghost, Destructive)
-/// - SoftSaaSIconButton: Icon-only button variant
-///
-/// All buttons feature neumorphic shadows, smooth transitions, and full dark mode support.
+// Soft SaaS UI Button Components
+//
+// This file implements all button variants from the Soft SaaS UI design system:
+// - SoftSaaSButton: Main button component (Primary, Secondary, Tertiary, Outline, Ghost, Destructive)
+// - SoftSaaSIconButton: Icon-only button variant
+//
+// All buttons feature neumorphic shadows, smooth transitions, and full dark mode support.
 
 import 'package:flutter/material.dart';
 import '../design_tokens.dart';

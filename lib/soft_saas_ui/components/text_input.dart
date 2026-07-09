@@ -1,10 +1,10 @@
-/// Soft SaaS UI Text Input Component
-///
-/// Production-ready text input fields with flat, border-first styling.
-/// The default constructor matches the DialogTextField pattern from
-/// Flat, compact text input with radius 7 and no shadow.
-///
-/// Use [SoftSaaSTextInput.elevated] for the neumorphic shadow style.
+// Soft SaaS UI Text Input Component
+//
+// Production-ready text input fields with flat, border-first styling.
+// The default constructor matches the DialogTextField pattern from
+// Flat, compact text input with radius 7 and no shadow.
+//
+// Use [SoftSaaSTextInput.elevated] for the neumorphic shadow style.
 
 import 'package:flutter/material.dart';
 import '../design_tokens.dart';

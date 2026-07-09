@@ -1,14 +1,14 @@
-/// Soft SaaS UI Icon Picker.
-///
-/// A button-style trigger that opens a popover containing an optional search
-/// field and a scrollable icon grid. Backed by [lucideIconRegistry] — a
-/// curated const map of ~180 Lucide icons that preserves Flutter's icon
-/// tree-shaking.
-///
-/// When no search query is active and [showPresetsOnEmpty] is true, the
-/// popover opens on a 3×4 grid of [lucideIconPresetNames] to give the
-/// "just give me a common icon" experience. Typing in the search expands
-/// to the full registry (or the caller-supplied [allowedIcons] subset).
+// Soft SaaS UI Icon Picker.
+//
+// A button-style trigger that opens a popover containing an optional search
+// field and a scrollable icon grid. Backed by [lucideIconRegistry] — a
+// curated const map of ~180 Lucide icons that preserves Flutter's icon
+// tree-shaking.
+//
+// When no search query is active and [showPresetsOnEmpty] is true, the
+// popover opens on a 3×4 grid of [lucideIconPresetNames] to give the
+// "just give me a common icon" experience. Typing in the search expands
+// to the full registry (or the caller-supplied [allowedIcons] subset).
 library;
 
 import 'package:flutter/material.dart';

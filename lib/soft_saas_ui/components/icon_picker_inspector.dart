@@ -1,13 +1,13 @@
-/// Soft SaaS UI Icon Picker — Inspector-style inline swatch grid.
-///
-/// Two variants:
-///
-/// * [SoftSaaSIconPickerInspector] — the full inspector strip: optional "None"
-///   swatch, a short row of frequent icons, then an ellipsis that opens the
-///   searchable grid popover.
-/// * [SoftSaaSIconSwatchInspector] — a standalone single-button variant (mirrors
-///   the standalone color swatch pattern) that renders only the current
-///   icon inside a tappable square which opens the same popover.
+// Soft SaaS UI Icon Picker — Inspector-style inline swatch grid.
+//
+// Two variants:
+//
+// * [SoftSaaSIconPickerInspector] — the full inspector strip: optional "None"
+//   swatch, a short row of frequent icons, then an ellipsis that opens the
+//   searchable grid popover.
+// * [SoftSaaSIconSwatchInspector] — a standalone single-button variant (mirrors
+//   the standalone color swatch pattern) that renders only the current
+//   icon inside a tappable square which opens the same popover.
 library;
 
 import 'package:flutter/material.dart';

@@ -1,7 +1,7 @@
-/// Soft SaaS UI Action Button Component
-///
-/// An icon button that shows a checkmark confirmation after pressing.
-/// Used for clipboard copy, download, and other action-confirmation patterns.
+// Soft SaaS UI Action Button Component
+//
+// An icon button that shows a checkmark confirmation after pressing.
+// Used for clipboard copy, download, and other action-confirmation patterns.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';

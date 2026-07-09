@@ -1,10 +1,10 @@
-/// Soft SaaS UI Alignment Picker — Inspector-style right-panel layout.
-///
-/// Compact horizontal layout: `[mini 32×32 anchor] [X input] [Y input]`.
-/// Meant for dense inspector panels where the 75×75 grid is too big.
-///
-/// This is a **standalone** widget — not a variant of [SoftSaaSAlignmentPicker].
-/// Choose the widget that matches your surface instead of flipping a variant.
+// Soft SaaS UI Alignment Picker — Inspector-style right-panel layout.
+//
+// Compact horizontal layout: `[mini 32×32 anchor] [X input] [Y input]`.
+// Meant for dense inspector panels where the 75×75 grid is too big.
+//
+// This is a **standalone** widget — not a variant of [SoftSaaSAlignmentPicker].
+// Choose the widget that matches your surface instead of flipping a variant.
 library;
 
 import 'package:flutter/material.dart';

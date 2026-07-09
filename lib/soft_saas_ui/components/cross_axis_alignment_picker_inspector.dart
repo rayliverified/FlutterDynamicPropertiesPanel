@@ -1,4 +1,4 @@
-/// Inspector-style CrossAxisAlignment picker.
+// Inspector-style CrossAxisAlignment picker.
 library;
 
 import 'package:flutter/material.dart';

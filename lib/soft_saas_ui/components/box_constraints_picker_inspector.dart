@@ -1,13 +1,13 @@
-/// Soft SaaS UI BoxConstraints Picker — Inspector-style with mini frame visual.
-///
-/// Layout:
-///                 [W↓][W↑]
-///    [mini frame]
-///                 [H↓][H↑]
-///
-/// The mini frame shows horizontal arrows (min-max width) and vertical
-/// arrows (min-max height), sized/scaled to the entered values. Sides are
-/// highlighted while their input is focused.
+// Soft SaaS UI BoxConstraints Picker — Inspector-style with mini frame visual.
+//
+// Layout:
+//                 [W↓][W↑]
+//    [mini frame]
+//                 [H↓][H↑]
+//
+// The mini frame shows horizontal arrows (min-max width) and vertical
+// arrows (min-max height), sized/scaled to the entered values. Sides are
+// highlighted while their input is focused.
 library;
 
 import 'package:flutter/material.dart';

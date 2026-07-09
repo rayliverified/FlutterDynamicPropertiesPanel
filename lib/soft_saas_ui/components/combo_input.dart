@@ -1,18 +1,18 @@
-/// Soft SaaS UI Combo Input.
-///
-/// A text input with a right-side chevron that opens a dropdown menu
-/// anchored to the field. Unlike [SoftSaaSCombobox] (which is a
-/// search-to-filter select), this is a **free-text field** with an
-/// optional preset list — pick from the menu or type anything.
-///
-/// Used for:
-///   - Language/extension filters (replaces the `PopupMenuButton`
-///     suffix in compact token-input UIs)
-///   - Font family picker with custom-value fallback
-///   - Enum props that allow a custom literal
-///
-/// The menu visual matches [SoftSaaSDropdown] exactly (radius, shadow,
-/// option padding, selected highlight).
+// Soft SaaS UI Combo Input.
+//
+// A text input with a right-side chevron that opens a dropdown menu
+// anchored to the field. Unlike [SoftSaaSCombobox] (which is a
+// search-to-filter select), this is a **free-text field** with an
+// optional preset list — pick from the menu or type anything.
+//
+// Used for:
+//   - Language/extension filters (replaces the `PopupMenuButton`
+//     suffix in compact token-input UIs)
+//   - Font family picker with custom-value fallback
+//   - Enum props that allow a custom literal
+//
+// The menu visual matches [SoftSaaSDropdown] exactly (radius, shadow,
+// option padding, selected highlight).
 library;
 
 import 'package:flutter/gestures.dart';

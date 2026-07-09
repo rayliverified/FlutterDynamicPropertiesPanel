@@ -1,16 +1,16 @@
-/// Soft SaaS UI Number Preset Input Component
-///
-/// Production-ready numeric input with direct typing, horizontal drag
-/// adjustment, stepper buttons, min/max clamping, and decimal/negative rules.
-///
-/// The default constructor provides a flat, border-first field matching the
-/// production DialogTextField / SoftSaaSTextInput pattern:
-/// - radius 7
-/// - compact padding (10h × 12v for medium)
-/// - no shadow
-/// - focus via border color shift + width change
-///
-/// Set [elevated] to true for the neumorphic shadow style.
+// Soft SaaS UI Number Preset Input Component
+//
+// Production-ready numeric input with direct typing, horizontal drag
+// adjustment, stepper buttons, min/max clamping, and decimal/negative rules.
+//
+// The default constructor provides a flat, border-first field matching the
+// production DialogTextField / SoftSaaSTextInput pattern:
+// - radius 7
+// - compact padding (10h × 12v for medium)
+// - no shadow
+// - focus via border color shift + width change
+//
+// Set [elevated] to true for the neumorphic shadow style.
 library;
 
 import 'package:flutter/material.dart';

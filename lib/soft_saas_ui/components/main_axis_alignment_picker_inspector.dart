@@ -1,4 +1,4 @@
-/// Inspector-style MainAxisAlignment picker.
+// Inspector-style MainAxisAlignment picker.
 library;
 
 import 'package:flutter/material.dart';

@@ -1,14 +1,14 @@
-/// Soft SaaS UI EdgeInsets Picker — Inspector-style with mini preview.
-///
-/// Cross-pattern layout:
-///
-///                [T input]
-///   [L input]   [mini box]  [R input]
-///                [B input]
-///
-/// The mini box (60×60) paints 4 inset bars. Hovering over a side strip
-/// highlights that bar. Dragging in a side strip changes the value for that
-/// side. The center button toggles uniform mode.
+// Soft SaaS UI EdgeInsets Picker — Inspector-style with mini preview.
+//
+// Cross-pattern layout:
+//
+//                [T input]
+//   [L input]   [mini box]  [R input]
+//                [B input]
+//
+// The mini box (60×60) paints 4 inset bars. Hovering over a side strip
+// highlights that bar. Dragging in a side strip changes the value for that
+// side. The center button toggles uniform mode.
 library;
 
 import 'package:flutter/material.dart';

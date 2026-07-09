@@ -1,8 +1,8 @@
-/// Soft SaaS UI Reorderable List Component
-///
-/// A bordered container with a header (title + count badge + add button),
-/// reorderable items with drag handles, and an empty state.
-/// Production flat style — border + bg, no shadow.
+// Soft SaaS UI Reorderable List Component
+//
+// A bordered container with a header (title + count badge + add button),
+// reorderable items with drag handles, and an empty state.
+// Production flat style — border + bg, no shadow.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';

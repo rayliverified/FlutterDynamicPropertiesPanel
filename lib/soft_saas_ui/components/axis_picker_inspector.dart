@@ -1,4 +1,4 @@
-/// Inspector-style Axis (direction) picker — horizontal / vertical toggle chips.
+// Inspector-style Axis (direction) picker — horizontal / vertical toggle chips.
 library;
 
 import 'package:flutter/material.dart';

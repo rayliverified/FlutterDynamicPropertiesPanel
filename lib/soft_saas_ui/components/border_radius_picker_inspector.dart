@@ -1,13 +1,13 @@
-/// Soft SaaS UI BorderRadius Picker — Inspector-style with mini preview.
-///
-/// Compact positional layout, same pattern as the alignment Inspector picker:
-///
-///   [TL input] [mini box] [TR input]
-///   [BL input]            [BR input]
-///
-/// The mini box paints 4 corner arcs, highlighting whichever input is
-/// focused or whichever corner is hovered/dragged. Dragging anywhere in a
-/// corner quadrant of the mini box directly changes that corner's radius.
+// Soft SaaS UI BorderRadius Picker — Inspector-style with mini preview.
+//
+// Compact positional layout, same pattern as the alignment Inspector picker:
+//
+//   [TL input] [mini box] [TR input]
+//   [BL input]            [BR input]
+//
+// The mini box paints 4 corner arcs, highlighting whichever input is
+// focused or whichever corner is hovered/dragged. Dragging anywhere in a
+// corner quadrant of the mini box directly changes that corner's radius.
 library;
 
 import 'package:flutter/material.dart';

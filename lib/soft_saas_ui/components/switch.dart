@@ -1,6 +1,6 @@
-/// Soft SaaS UI Switch Component
-///
-/// Toggle switch form control with keyboard support, hover states, and accessibility
+// Soft SaaS UI Switch Component
+//
+// Toggle switch form control with keyboard support, hover states, and accessibility
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

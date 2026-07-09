@@ -1,13 +1,13 @@
-/// Soft SaaS UI Rich Text Field.
-///
-/// A [TextField]-like widget backed by [TextfEditingController] from the
-/// `textf` package. Formatting is stored as Markdown-style markers in
-/// the plain text (e.g. `**bold**`, `*italic*`, `~~strike~~`). Pair with
-/// [SoftSaaSRichTextToolbar] for a click-to-wrap experience.
-///
-/// Inline-only: bold / italic / underline / strike / code / highlight /
-/// sub- and super-script / links. No block formatting (textf doesn't do
-/// headings, lists, or colors). For block formatting, use AppFlowy.
+// Soft SaaS UI Rich Text Field.
+//
+// A [TextField]-like widget backed by [TextfEditingController] from the
+// `textf` package. Formatting is stored as Markdown-style markers in
+// the plain text (e.g. `**bold**`, `*italic*`, `~~strike~~`). Pair with
+// [SoftSaaSRichTextToolbar] for a click-to-wrap experience.
+//
+// Inline-only: bold / italic / underline / strike / code / highlight /
+// sub- and super-script / links. No block formatting (textf doesn't do
+// headings, lists, or colors). For block formatting, use AppFlowy.
 library;
 
 import 'package:flutter/material.dart';

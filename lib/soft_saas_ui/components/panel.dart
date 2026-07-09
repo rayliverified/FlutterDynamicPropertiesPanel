@@ -1,10 +1,10 @@
-/// Soft SaaS UI Panel Component
-///
-/// Flat bordered container for compact inspector layouts. White background,
-/// 1px primaryBorder, no shadow.
-///
-/// Use [SoftSaaSPanel] for a static container with optional title header.
-/// Use [SoftSaaSPanel.expandable] for a collapsible panel with toggle.
+// Soft SaaS UI Panel Component
+//
+// Flat bordered container for compact inspector layouts. White background,
+// 1px primaryBorder, no shadow.
+//
+// Use [SoftSaaSPanel] for a static container with optional title header.
+// Use [SoftSaaSPanel.expandable] for a collapsible panel with toggle.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';

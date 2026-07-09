@@ -1,4 +1,4 @@
-/// Inspector-style TextAlign picker — left / center / right / justify toggle chips.
+// Inspector-style TextAlign picker — left / center / right / justify toggle chips.
 library;
 
 import 'package:flutter/material.dart';

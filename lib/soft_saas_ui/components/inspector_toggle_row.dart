@@ -1,8 +1,8 @@
-/// Generic Inspector-style icon toggle row.
-///
-/// Renders primary options as inline white-chip toggles inside a gray
-/// container. Optional overflow options live behind a vertical-ellipsis chip
-/// that becomes selected (with their icon) when one is active.
+// Generic Inspector-style icon toggle row.
+//
+// Renders primary options as inline white-chip toggles inside a gray
+// container. Optional overflow options live behind a vertical-ellipsis chip
+// that becomes selected (with their icon) when one is active.
 library;
 
 import 'package:flutter/material.dart';

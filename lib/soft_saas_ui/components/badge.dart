@@ -1,7 +1,7 @@
-/// Soft SaaS UI Badge Component
-///
-/// Badge labels with variants, sizes, shapes, interactive capabilities,
-/// and animations.
+// Soft SaaS UI Badge Component
+//
+// Badge labels with variants, sizes, shapes, interactive capabilities,
+// and animations.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';

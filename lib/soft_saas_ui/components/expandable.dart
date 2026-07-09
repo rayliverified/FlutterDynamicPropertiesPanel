@@ -1,8 +1,8 @@
-/// Soft SaaS UI Expandable Component
-///
-/// Lightweight inline toggle with chevron and animated expand/collapse.
-/// The caller owns the open/closed state — no card chrome, no borders,
-/// no shadows. Designed to embed inside forms, dialogs, and panels.
+// Soft SaaS UI Expandable Component
+//
+// Lightweight inline toggle with chevron and animated expand/collapse.
+// The caller owns the open/closed state — no card chrome, no borders,
+// no shadows. Designed to embed inside forms, dialogs, and panels.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';

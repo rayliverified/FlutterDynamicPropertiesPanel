@@ -1,10 +1,10 @@
-/// Soft SaaS UI Color Input.
-///
-/// Hex-color text field matching the [SoftSaaSTextInput] visual language.
-/// Handles short-hex expansion, paste, `#` prefix, uppercase normalization,
-/// and optional alpha. A leading color swatch opens a picker via callback —
-/// the picker itself lives in a separate package to keep this component
-/// dependency-free.
+// Soft SaaS UI Color Input.
+//
+// Hex-color text field matching the [SoftSaaSTextInput] visual language.
+// Handles short-hex expansion, paste, `#` prefix, uppercase normalization,
+// and optional alpha. A leading color swatch opens a picker via callback —
+// the picker itself lives in a separate package to keep this component
+// dependency-free.
 library;
 
 import 'package:flutter/material.dart';

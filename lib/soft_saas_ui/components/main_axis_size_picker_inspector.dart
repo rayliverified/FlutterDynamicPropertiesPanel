@@ -1,4 +1,4 @@
-/// Inspector-style MainAxisSize picker — min / max toggle chips.
+// Inspector-style MainAxisSize picker — min / max toggle chips.
 library;
 
 import 'package:flutter/material.dart';

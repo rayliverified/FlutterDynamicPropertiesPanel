@@ -1,11 +1,11 @@
-/// Soft SaaS UI Size Picker — Inspector-style with aspect-ratio indicator.
-///
-/// Layout:
-///   [aspect ▾]  [W input]  [🔗]  [H input]
-///
-/// The aspect indicator shows a small rectangle proportional to W:H with a
-/// triangle that opens a preset-ratio menu (1:1, 16:9, 4:3, etc.). When the
-/// chain is locked, adjusting either input (including drag) keeps the ratio.
+// Soft SaaS UI Size Picker — Inspector-style with aspect-ratio indicator.
+//
+// Layout:
+//   [aspect ▾]  [W input]  [🔗]  [H input]
+//
+// The aspect indicator shows a small rectangle proportional to W:H with a
+// triangle that opens a preset-ratio menu (1:1, 16:9, 4:3, etc.). When the
+// chain is locked, adjusting either input (including drag) keeps the ratio.
 library;
 
 import 'dart:math' as math;
