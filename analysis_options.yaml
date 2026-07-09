@@ -1,0 +1,14 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  errors:
+    deprecated_member_use: ignore
+    unreachable_switch_default: ignore
+    unused_element: ignore
+    unused_field: ignore
+
+linter:
+  rules:
+    curly_braces_in_flow_control_structures: false
+    dangling_library_doc_comments: false
+    unnecessary_library_name: false

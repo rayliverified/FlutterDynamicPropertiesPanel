@@ -1,0 +1,35 @@
+name: dynamic_properties_panel
+description: Schema-driven Flutter properties panel with polished controls, granular controller updates, presets, and editor-ready widgets.
+version: 1.0.0
+homepage: https://flutterdynamicpropertiespanel.netlify.app/
+repository: https://github.com/rayliverified/FlutterDynamicPropertiesPanel
+issue_tracker: https://github.com/rayliverified/FlutterDynamicPropertiesPanel/issues
+
+environment:
+  sdk: ">=3.8.0 <4.0.0"
+  flutter: ">=3.32.0"
+
+topics:
+  - flutter
+  - widgets
+  - forms
+  - editor
+  - properties
+
+dependencies:
+  flutter:
+    sdk: flutter
+  color_picker_plus: ^1.0.0
+  dotted_border: ^3.0.0
+  flutter_lucide: ^1.9.0
+  json_view_plus: ^1.0.0
+  shared_preferences: ^2.5.3
+  textf: ^1.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
