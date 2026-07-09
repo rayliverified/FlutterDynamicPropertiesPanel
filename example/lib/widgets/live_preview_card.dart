@@ -40,7 +40,6 @@ class _LivePreviewCardState extends State<LivePreviewCard>
   int _activeIndex = 0;
   double _dragOffset = 0;
   double _lastItemSpacing = 420;
-  bool _isDragging = false;
   late final AnimationController _snapController;
   Animation<double>? _snapOffsetAnimation;
 
@@ -78,21 +77,27 @@ class _LivePreviewCardState extends State<LivePreviewCard>
 
   @override
   Widget build(BuildContext context) {
-    const minPreviewHeight = 820.0;
     final body = LayoutBuilder(
       builder: (context, constraints) {
+        final compact =
+            constraints.hasBoundedWidth && constraints.maxWidth < 760;
+        final minPreviewHeight = compact ? 460.0 : 820.0;
         final targetHeight = constraints.hasBoundedHeight
             ? math.max(minPreviewHeight, constraints.maxHeight)
             : minPreviewHeight;
         final targetWidth = constraints.hasBoundedWidth
-            ? math.max(0.0, constraints.maxWidth - 40)
+            ? math.max(0.0, constraints.maxWidth - (compact ? 0 : 24))
             : 900.0;
         return SingleChildScrollView(
           child: ConstrainedBox(
             constraints: BoxConstraints(minHeight: targetHeight),
             child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Center(
+              padding: EdgeInsets.symmetric(
+                horizontal: compact ? 0 : 12,
+                vertical: compact ? 12 : 20,
+              ),
+              child: Align(
+                alignment: compact ? Alignment.topCenter : Alignment.center,
                 child: SizedBox(width: targetWidth, child: _bentoGrid()),
               ),
             ),
@@ -381,13 +386,11 @@ class _LivePreviewCardState extends State<LivePreviewCard>
             _snapController.stop();
             _snapOffsetAnimation = null;
             _dragOffset = 0;
-            _isDragging = true;
           }),
           onHorizontalDragUpdate: (details) {
             setState(() => _dragOffset += details.delta.dx);
           },
           onHorizontalDragCancel: () {
-            setState(() => _isDragging = false);
             _animateDragOffsetToZero(_dragOffset);
           },
           onHorizontalDragEnd: (details) {
@@ -396,61 +399,70 @@ class _LivePreviewCardState extends State<LivePreviewCard>
             final shouldGoNext = velocity < -120 || _dragOffset < -threshold;
             final shouldGoPrevious = velocity > 120 || _dragOffset > threshold;
             if (shouldGoNext) {
-              _selectCarouselIndex(math.min(_activeIndex + 1, items.length - 1));
+              _selectCarouselIndex(
+                math.min(_activeIndex + 1, items.length - 1),
+              );
             } else if (shouldGoPrevious) {
               _selectCarouselIndex(math.max(_activeIndex - 1, 0));
             } else {
-              setState(() => _isDragging = false);
-              _animateDragOffsetToZero(_dragOffset);
+                _animateDragOffsetToZero(_dragOffset);
             }
           },
-          child: SizedBox(
-            height: 780,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final activeWidth = items[_activeIndex].width;
-                final itemSpacing = math.max(
-                  360.0,
-                  math.min(activeWidth * 0.96, constraints.maxWidth * 0.44),
-                );
-                _lastItemSpacing = itemSpacing;
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final compact = constraints.maxWidth < 760;
+              return SizedBox(
+                height: compact ? 430 : 780,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final activeWidth = items[_activeIndex].width;
+                    final itemSpacing = math.max(
+                      360.0,
+                      math.min(activeWidth * 0.96, constraints.maxWidth * 0.44),
+                    );
+                    _lastItemSpacing = itemSpacing;
 
-                return Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    for (var index = items.length - 1; index >= 0; index--)
-                      if ((index - _activeIndex).abs() <= 2)
-                        _positionedCarouselItem(
-                          item: items[index],
-                          index: index,
-                          itemSpacing: itemSpacing,
-                          offsetX:
-                              (index - _activeIndex) * itemSpacing + _dragOffset,
+                    return Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        for (var index = items.length - 1; index >= 0; index--)
+                          if ((index - _activeIndex).abs() <= 2)
+                            _positionedCarouselItem(
+                              item: items[index],
+                              index: index,
+                              itemSpacing: itemSpacing,
+                              offsetX:
+                                  (index - _activeIndex) * itemSpacing +
+                                  _dragOffset,
+                            ),
+                        Positioned(
+                          left: 0,
+                          top: 0,
+                          bottom: 0,
+                          child: _carouselArrow(
+                            icon: LucideIcons.chevron_left,
+                            enabled: _activeIndex > 0,
+                            onPressed: () =>
+                                _selectCarouselIndex(_activeIndex - 1),
+                          ),
                         ),
-                    Positioned(
-                      left: 8,
-                      top: 0,
-                      bottom: 0,
-                      child: _carouselArrow(
-                        icon: LucideIcons.chevron_left,
-                        enabled: _activeIndex > 0,
-                        onPressed: () => _selectCarouselIndex(_activeIndex - 1),
-                      ),
-                    ),
-                    Positioned(
-                      right: 8,
-                      top: 0,
-                      bottom: 0,
-                      child: _carouselArrow(
-                        icon: LucideIcons.chevron_right,
-                        enabled: _activeIndex < items.length - 1,
-                        onPressed: () => _selectCarouselIndex(_activeIndex + 1),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          bottom: 0,
+                          child: _carouselArrow(
+                            icon: LucideIcons.chevron_right,
+                            enabled: _activeIndex < items.length - 1,
+                            onPressed: () =>
+                                _selectCarouselIndex(_activeIndex + 1),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              );
+            },
           ),
         );
       },
@@ -464,17 +476,19 @@ class _LivePreviewCardState extends State<LivePreviewCard>
     required double offsetX,
   }) {
     final virtualIndex = _activeIndex - (_dragOffset / itemSpacing);
+    final compact = MediaQuery.sizeOf(context).width < 760;
     final distance = (virtualIndex - index).abs().clamp(0.0, 2.0);
     final scale = 1.0 - (distance * 0.24);
     final opacity = (1.0 - (distance * 0.42)).clamp(0.22, 1.0);
-    final yOffset = distance * 26;
+    final yOffset = distance * (compact ? 12 : 26);
 
     return Positioned.fill(
       child: IgnorePointer(
         ignoring: distance > 1.2,
         child: Opacity(
           opacity: opacity,
-          child: Center(
+          child: Align(
+            alignment: Alignment.center,
             child: Transform.translate(
               offset: Offset(offsetX, yOffset),
               child: Transform.scale(
@@ -493,6 +507,10 @@ class _LivePreviewCardState extends State<LivePreviewCard>
     required bool enabled,
     required VoidCallback onPressed,
   }) {
+    final compact = MediaQuery.sizeOf(context).width < 760;
+    final buttonSize = compact ? 34.0 : 42.0;
+    final iconSize = compact ? 18.0 : 22.0;
+
     return Center(
       child: AnimatedOpacity(
         duration: const Duration(milliseconds: 180),
@@ -506,11 +524,11 @@ class _LivePreviewCardState extends State<LivePreviewCard>
             customBorder: const CircleBorder(),
             onTap: enabled ? onPressed : null,
             child: SizedBox(
-              width: 42,
-              height: 42,
+              width: buttonSize,
+              height: buttonSize,
               child: Icon(
                 icon,
-                size: 22,
+                size: iconSize,
                 color: enabled
                     ? SoftSaaSTokens.secondaryText(brightness)
                     : SoftSaaSTokens.tertiaryText(brightness),
@@ -697,7 +715,6 @@ class _LivePreviewCardState extends State<LivePreviewCard>
     setState(() {
       _activeIndex = index;
       _dragOffset = continuityOffset;
-      _isDragging = false;
     });
     widget.onPropertySelected?.call(items[index].propertyName);
     _animateDragOffsetToZero(continuityOffset);
@@ -717,11 +734,16 @@ class _LivePreviewCardState extends State<LivePreviewCard>
 
   Widget _carouselCard(_PreviewCarouselItem item, int index) {
     final active = index == _activeIndex;
+    final compact = MediaQuery.sizeOf(context).width < 760;
+    final cardScale = compact ? 0.60 : 1.0;
+    final cardWidth = item.width * cardScale;
+    final cardHeight = item.height == null ? null : item.height! * cardScale;
+
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () => _selectCarouselIndex(index),
       child: SizedBox(
-        width: item.width,
+        width: cardWidth,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -736,13 +758,20 @@ class _LivePreviewCardState extends State<LivePreviewCard>
               ),
               child: Text(item.name),
             ),
-            const SizedBox(height: 22),
+            SizedBox(height: compact ? 12 : 22),
             if (item.height == null)
-              SizedBox(width: item.width, child: item.child)
+              SizedBox(
+                width: cardWidth,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.topCenter,
+                  child: SizedBox(width: item.width, child: item.child),
+                ),
+              )
             else
               SizedBox(
-                width: item.width,
-                height: item.height,
+                width: cardWidth,
+                height: cardHeight,
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.topCenter,

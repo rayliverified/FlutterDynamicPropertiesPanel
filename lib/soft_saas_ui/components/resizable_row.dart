@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:dynamic_properties_panel/soft_saas_ui/soft_saas/design_tokens.dart';
+import 'package:dynamic_properties_panel/soft_saas_ui/design_tokens.dart';
 
 /// Visual style for the [SoftSaaSResizableRow] drag handle.
 enum SoftSaaSResizableHandleStyle {
