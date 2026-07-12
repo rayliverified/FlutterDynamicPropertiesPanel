@@ -1,15 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:dynamic_properties_panel/soft_saas_ui/soft_saas_ui.dart';
 
+import '../models/dynamic_property_definition.dart';
+import 'icon_control.dart';
+
 /// Control for editing `Map<String, dynamic>` values.
 ///
 /// Inspector-style: compact bordered container with header row,
 /// key-value pairs, and add/remove actions.
 class MapControl extends StatefulWidget {
-  const MapControl({super.key, required this.value, required this.onChanged});
+  const MapControl({
+    super.key,
+    required this.value,
+    required this.onChanged,
+    this.valueDefinition,
+  });
 
   final dynamic value;
   final ValueChanged<dynamic> onChanged;
+  final DynamicPropertyDefinition? valueDefinition;
 
   @override
   State<MapControl> createState() => _MapControlState();
@@ -44,7 +53,7 @@ class _MapControlState extends State<MapControl> {
         key = 'key${_entries.length + i}';
         i++;
       }
-      _entries[key] = '';
+      _entries[key] = widget.valueDefinition?.defaultValue;
     });
     _emit();
   }
@@ -174,17 +183,7 @@ class _MapControlState extends State<MapControl> {
               ),
             ),
           ),
-          Expanded(
-            child: _MapEntryTextField(
-              key: ValueKey('map-value-$key'),
-              text: value is String ? value : (value?.toString() ?? ''),
-              hintText: 'value',
-              onChanged: (newVal) {
-                _entries[key] = newVal;
-                _emit();
-              },
-            ),
-          ),
+          Expanded(child: _buildValueControl(key, value)),
           SoftSaaSIconButton(
             icon: Icons.close,
             size: SoftSaaSButtonSize.small,
@@ -197,6 +196,38 @@ class _MapControlState extends State<MapControl> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildValueControl(String key, dynamic value) {
+    final definition = widget.valueDefinition;
+    if (definition?.kind == DynamicPropertyKind.icon ||
+        definition?.kind == DynamicPropertyKind.iconSwatch) {
+      final allowedIcons = definition?.bounds?['allowedIcons'];
+      return Align(
+        alignment: Alignment.centerLeft,
+        child: IconControl(
+          key: ValueKey('map-value-$key'),
+          value: value?.toString(),
+          allowedIcons: allowedIcons is List
+              ? allowedIcons.map((icon) => icon.toString()).toList()
+              : null,
+          onChanged: (newValue) {
+            _entries[key] = newValue;
+            _emit();
+          },
+        ),
+      );
+    }
+
+    return _MapEntryTextField(
+      key: ValueKey('map-value-$key'),
+      text: value is String ? value : (value?.toString() ?? ''),
+      hintText: 'value',
+      onChanged: (newVal) {
+        _entries[key] = newVal;
+        _emit();
+      },
     );
   }
 

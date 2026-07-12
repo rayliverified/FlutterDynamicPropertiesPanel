@@ -4,6 +4,7 @@ import 'package:dynamic_properties_panel/dynamic_properties_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:dynamic_properties_panel/soft_saas_ui/soft_saas_ui.dart';
+import 'package:dynamic_properties_panel/soft_saas_ui/icons/lucide_icon_registry.dart';
 
 /// Live Preview Card — renders a realistic SaaS "Feature Block" bento
 /// dashboard that visualizes the shared [controller]'s property values.
@@ -1499,22 +1500,27 @@ class _LivePreviewCardState extends State<LivePreviewCard>
                               color: SoftSaaSTokens.primaryBorder(brightness),
                             ),
                           ),
-                          child: RichText(
-                            text: TextSpan(
-                              style: TextStyle(
-                                fontSize: 9,
-                                color: SoftSaaSTokens.tertiaryText(brightness),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                lookupLucideIcon(entry.value.toString()) ??
+                                    Icons.help_outline,
+                                size: 11,
+                                color: SoftSaaSTokens.primaryColor(brightness),
                               ),
-                              children: [
-                                TextSpan(
-                                  text: '${entry.key}: ',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w700,
+                              const SizedBox(width: 5),
+                              Text(
+                                entry.key,
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w700,
+                                  color: SoftSaaSTokens.secondaryText(
+                                    brightness,
                                   ),
                                 ),
-                                TextSpan(text: entry.value.toString()),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         );
                       })

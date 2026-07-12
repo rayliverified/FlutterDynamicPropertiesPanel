@@ -406,8 +406,8 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
               },
             ],
             'attributes': <String, dynamic>{
-              'campaign': 'spring_launch',
-              'owner': 'growth_team',
+              'campaign': 'rocket',
+              'owner': 'users',
             },
           },
         },
@@ -491,8 +491,8 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
             'crossAxisAlignment': 'center',
             'children': <dynamic>[],
             'attributes': <String, dynamic>{
-              'campaign': 'compact',
-              'owner': 'growth_team',
+              'campaign': 'minimize-2',
+              'owner': 'users',
             },
           },
         },
@@ -576,8 +576,8 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
             'crossAxisAlignment': 'center',
             'children': <dynamic>[],
             'attributes': <String, dynamic>{
-              'campaign': 'hero_launch',
-              'owner': 'growth_team',
+              'campaign': 'sparkles',
+              'owner': 'palette',
             },
           },
         },
@@ -779,10 +779,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
             },
           },
         ],
-        'attributes': <String, dynamic>{
-          'campaign': 'spring_launch',
-          'owner': 'growth_team',
-        },
+        'attributes': <String, dynamic>{'campaign': 'rocket', 'owner': 'users'},
       },
     };
     _controller = DynamicPropertiesController(initial: initialValues);
@@ -1109,7 +1106,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
       {
         'name': 'showcase',
         'type': 'object',
-        'title': 'Layout Showcase',
+        'title': 'Layout Showcase (properties only)',
         'description': 'Axis alignment + widgetList + map controls showcase',
         'properties': {
           'mainAxisAlignment': {
@@ -1130,9 +1127,10 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
             'description': 'List of child components',
           },
           'attributes': {
-            'type': 'Map<String, dynamic>',
-            'title': 'Attributes',
-            'description': 'Simple key/value metadata map',
+            'type': 'Map<String, IconData>',
+            'title': 'Icon Legend',
+            'description': 'String keys mapped to icon-picker values',
+            'value': {'type': 'icon', 'defaultValue': 'circle'},
           },
         },
       },

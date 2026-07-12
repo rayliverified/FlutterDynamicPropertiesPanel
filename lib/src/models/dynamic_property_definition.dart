@@ -67,6 +67,7 @@ class DynamicPropertyDefinition {
     this.bounds,
     this.properties,
     this.item,
+    this.mapValue,
     this.rawType,
     this.iconName,
     this.suggestions,
@@ -115,6 +116,10 @@ class DynamicPropertyDefinition {
 
   /// Item definition for [array] kind.
   final DynamicPropertyDefinition? item;
+
+  /// Value definition for [map] kind. Map keys remain strings while each
+  /// value uses this schema to select and configure its input control.
+  final DynamicPropertyDefinition? mapValue;
 
   /// Original Dart type string (e.g. `'int'`, `'Alignment'`, `'TextStyle'`).
   final String? rawType;
@@ -240,6 +245,7 @@ class DynamicPropertyDefinition {
     Map<String, dynamic>? bounds,
     List<DynamicPropertyDefinition>? properties,
     DynamicPropertyDefinition? item,
+    DynamicPropertyDefinition? mapValue,
     String? rawType,
     String? iconName,
     List<String>? suggestions,
@@ -259,6 +265,7 @@ class DynamicPropertyDefinition {
       bounds: bounds ?? this.bounds,
       properties: properties ?? this.properties,
       item: item ?? this.item,
+      mapValue: mapValue ?? this.mapValue,
       rawType: rawType ?? this.rawType,
       iconName: iconName ?? this.iconName,
       suggestions: suggestions ?? this.suggestions,
@@ -294,6 +301,7 @@ class DynamicPropertyDefinition {
 
     final nestedProperties = _parseProperties(json['properties']);
     final nestedItem = _parseItem(json['items'] ?? json['item']);
+    final mapValue = _parseItem(json['value'], fallbackName: 'value');
 
     final kind = inferKind(
       rawType,
@@ -318,6 +326,7 @@ class DynamicPropertyDefinition {
           : null,
       properties: nestedProperties,
       item: nestedItem,
+      mapValue: mapValue,
       rawType: rawType,
       iconName: json['iconName']?.toString(),
       suggestions: (json['suggestions'] is List)
@@ -529,11 +538,14 @@ class DynamicPropertyDefinition {
     return results;
   }
 
-  static DynamicPropertyDefinition? _parseItem(dynamic rawItem) {
+  static DynamicPropertyDefinition? _parseItem(
+    dynamic rawItem, {
+    String fallbackName = 'item',
+  }) {
     if (rawItem is! Map) return null;
 
     final normalized = Map<String, dynamic>.from(rawItem);
-    normalized.putIfAbsent('name', () => 'item');
+    normalized.putIfAbsent('name', () => fallbackName);
     final parsed = DynamicPropertyDefinition.fromJson(normalized);
     if (parsed.name.isEmpty) return null;
     return parsed;

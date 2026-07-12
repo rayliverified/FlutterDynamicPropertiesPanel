@@ -259,6 +259,7 @@ extension _DppStateControlBuilders on _DynamicPropertiesPanelState {
   Widget _buildMapControl(DynamicPropertyDefinition property, dynamic value) {
     return MapControl(
       value: value,
+      valueDefinition: property.mapValue,
       onChanged: (updated) => _setValue(property.name, updated),
     );
   }
