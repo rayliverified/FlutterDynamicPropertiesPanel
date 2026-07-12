@@ -366,7 +366,6 @@ extension _DppStateControlBuilders on _DynamicPropertiesPanelState {
     // Column of ComponentSlotControls for a fixed set of distinct widget slots
     // that are not an editable list.
     return SoftSaaSReorderableList(
-      title: property.label,
       itemCount: listValue.length,
       onAdd: maximum == null || listValue.length < maximum
           ? () => _setValue(property.name, [...listValue, null])

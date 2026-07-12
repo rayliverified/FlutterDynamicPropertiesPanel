@@ -1041,10 +1041,6 @@ class _DynamicPropertiesPanelState extends State<DynamicPropertiesPanel>
           } else {
             row = const SizedBox.shrink();
           }
-        } else if (property.kind == DynamicPropertyKind.widgetList) {
-          // The shared list shell owns the label, count, add, reorder, and
-          // remove affordances, so do not wrap it in a duplicate property row.
-          row = _buildControl(property, displayValue);
         } else {
           final control = _buildControl(property, displayValue);
           row = Column(
