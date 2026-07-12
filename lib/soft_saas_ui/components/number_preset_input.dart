@@ -404,6 +404,17 @@ class _SoftSaaSNumberPresetInputState extends State<SoftSaaSNumberPresetInput> {
     return text;
   }
 
+  int get _stepPrecision {
+    if (widget.decimalPlaces != null) return widget.decimalPlaces!;
+    final text = widget.step.toString();
+    if (text.contains('e') || text.contains('E')) return 12;
+    final decimalIndex = text.indexOf('.');
+    return decimalIndex < 0 ? 0 : text.length - decimalIndex - 1;
+  }
+
+  double _normalizeStepValue(double value) =>
+      double.parse(value.toStringAsFixed(_stepPrecision.clamp(0, 12)));
+
   double _clamp(double v) {
     if (v.isInfinite) {
       if (!widget.allowInfinity) return widget.max ?? (widget.min ?? 0.0);
@@ -493,13 +504,17 @@ class _SoftSaaSNumberPresetInputState extends State<SoftSaaSNumberPresetInput> {
       (widget.min == null || (widget.value ?? 0.0) > widget.min!);
 
   void _increment() {
-    final next = _clamp((widget.value ?? 0.0) + widget.step);
+    final next = _clamp(
+      _normalizeStepValue((widget.value ?? 0.0) + widget.step),
+    );
     _setControllerToValue(next);
     widget.onChanged?.call(next);
   }
 
   void _decrement() {
-    final next = _clamp((widget.value ?? 0.0) - widget.step);
+    final next = _clamp(
+      _normalizeStepValue((widget.value ?? 0.0) - widget.step),
+    );
     _setControllerToValue(next);
     widget.onChanged?.call(next);
   }

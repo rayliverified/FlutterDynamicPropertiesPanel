@@ -77,10 +77,21 @@ class _MyPageState extends State<MyPage> {
 }
 ```
 
-### 2. Map-based (backwards-compatible)
+### 2. Properties-only
 
-The legacy constructor still works — the panel creates an internal
-controller. `onChanged` now fires only on **committed** changes (drag end,
+A schema can be used by itself. The panel creates an internal controller from
+each property's `defaultValue`:
+
+```dart
+DynamicPropertiesPanel(
+  properties: DynamicPropertyDefinition.listFromJson(schema),
+)
+```
+
+### 3. Map-based values
+
+Supplying `values` creates an internal controller. Values override matching
+schema defaults. `onChanged` fires only on **committed** changes (drag end,
 typing complete, preset applied), not on every drag tick:
 
 ```dart
@@ -88,6 +99,18 @@ DynamicPropertiesPanel(
   values: values,
   properties: DynamicPropertyDefinition.listFromJson(schema),
   onChanged: (next) => setState(() => values = next),
+)
+```
+
+`controller` and `values` are mutually exclusive. When `properties` is omitted,
+the panel infers basic controls from controller/value runtime types. An explicit
+`properties: []` renders a centered "No editable properties" state. Replace it
+with any layout by passing `emptyWidget`:
+
+```dart
+DynamicPropertiesPanel(
+  properties: const [],
+  emptyWidget: const MyCustomEmptyState(),
 )
 ```
 

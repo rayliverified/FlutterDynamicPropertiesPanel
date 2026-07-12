@@ -54,6 +54,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
   /// Authoritative shared state. Both the panel and the preview bind to
   /// this — that's how bidirectional sync works.
   late final DynamicPropertiesController _controller;
+  late final Map<String, DynamicPropertiesController> _standaloneControllers;
   late List<DynamicPropertyDefinition> _properties;
   late List<PropertyPreset> _presets;
   late Map<String, List<PropertyPreset>> _componentPresets;
@@ -753,6 +754,17 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
         'direction': 'horizontal',
       },
       'metadata': <String, dynamic>{'source': 'auto_storyboard', 'version': 3},
+      'reach': <String, dynamic>{
+        'users': 4218,
+        'window': '7d',
+        'trend': <int>[3, 5, 4, 7, 6, 9, 8, 11, 10, 14, 13, 16],
+      },
+      'conversion': <String, dynamic>{
+        'rate': 18.4,
+        'unit': 'percent',
+        'delta': 2.3,
+        'comparison': 'vs last 7d',
+      },
       'showcase': <String, dynamic>{
         'mainAxisAlignment': 'start',
         'crossAxisAlignment': 'center',
@@ -1039,6 +1051,60 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
         'description': 'Drives: Metadata tile — source + version badges',
       },
 
+      // ── Reach ────────────────────────────────────────────────────
+      {
+        'name': 'reach',
+        'type': 'object',
+        'title': 'Reach',
+        'description': 'Drives: Reach metric and trend card',
+        'properties': {
+          'users': {
+            'type': 'int',
+            'title': 'Users',
+            'defaultValue': 4218,
+            'bounds': {'minimum': 0},
+          },
+          'window': {'type': 'String', 'title': 'Window', 'defaultValue': '7d'},
+          'trend': {
+            'type': 'List<int>',
+            'title': 'Trend',
+            'item': {'type': 'int'},
+          },
+        },
+      },
+
+      // ── Conversion ───────────────────────────────────────────────
+      {
+        'name': 'conversion',
+        'type': 'object',
+        'title': 'Conversion',
+        'description': 'Drives: Conversion metric card',
+        'properties': {
+          'rate': {
+            'type': 'double',
+            'title': 'Rate',
+            'defaultValue': 18.4,
+            'bounds': {'minimum': 0, 'maximum': 100, 'step': 0.1},
+          },
+          'unit': {
+            'type': 'String',
+            'title': 'Unit',
+            'defaultValue': 'percent',
+          },
+          'delta': {
+            'type': 'double',
+            'title': 'Delta',
+            'defaultValue': 2.3,
+            'bounds': {'step': 0.1},
+          },
+          'comparison': {
+            'type': 'String',
+            'title': 'Comparison',
+            'defaultValue': 'vs last 7d',
+          },
+        },
+      },
+
       // ── Layout Showcase ───────────────────────────────────────────
       {
         'name': 'showcase',
@@ -1071,11 +1137,33 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
         },
       },
     ]);
+
+    const standaloneKeys = <String>[
+      'cta',
+      'reach',
+      'audience',
+      'conversion',
+      'appearance',
+      'rolloutPercentage',
+      'rollout',
+      'tags',
+      'child',
+      'frame',
+      'metadata',
+      'showcase',
+    ];
+    _standaloneControllers = <String, DynamicPropertiesController>{
+      for (final key in standaloneKeys)
+        key: DynamicPropertiesController(initial: _controller.snapshot()),
+    };
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    for (final controller in _standaloneControllers.values) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -1126,9 +1214,10 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
     List<PropertyPreset>? presets,
   })
   _scopedPropertiesFor(String key) {
+    final scopeController = _standaloneControllers[key]!;
     switch (key) {
       case 'cta':
-        return _scopedGroup('cta', const [
+        return _scopedGroup(scopeController, 'cta', const [
           'title',
           'fontSize',
           'lineHeight',
@@ -1138,55 +1227,66 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
           'labelStyle',
         ]);
       case 'audience':
-        return _scopedGroup('targeting', const ['audiences']);
+        return _scopedGroup(scopeController, 'targeting', const ['audiences']);
       case 'appearance':
-        return _scopedGroup('appearance', const [
+        return _scopedGroup(scopeController, 'appearance', const [
           'layout',
           'padding',
           'cornerRadius',
           'animDuration',
         ]);
       case 'rolloutPercentage':
-        return _scopedGroup('schedule', const ['rolloutPercentage']);
+        return _scopedGroup(scopeController, 'schedule', const [
+          'rolloutPercentage',
+        ]);
       case 'rollout':
-        return _scopedGroup('schedule', const ['rollout']);
+        return _scopedGroup(scopeController, 'schedule', const ['rollout']);
       case 'tags':
-        return _scopedGroup('targeting', const ['tags']);
+        return _scopedGroup(scopeController, 'targeting', const ['tags']);
       case 'child':
-        return _scopedGroup('slot', const ['child']);
+        return _scopedGroup(scopeController, 'slot', const ['child']);
       case 'frame':
-        return _scopedGroup('slot', const ['frameSize', 'sizeConstraints']);
+        return _scopedGroup(scopeController, 'slot', const [
+          'frameSize',
+          'rotation',
+          'sizeConstraints',
+          'mainAxisSize',
+          'direction',
+        ]);
       case 'metadata':
         final property = _propertyDefinition('metadata');
         return (
-          values: <String, dynamic>{'metadata': _controller['metadata']},
+          values: <String, dynamic>{'metadata': scopeController['metadata']},
           properties: property == null
               ? <DynamicPropertyDefinition>[]
               : [property],
           onChanged: (updated) => setState(() {
-            _controller['metadata'] = updated['metadata'];
+            scopeController['metadata'] = updated['metadata'];
           }),
           presets: _scopedPresetsForTopLevel('metadata'),
         );
       case 'reach':
-        return _readOnlyScope(<String, dynamic>{
-          'reach': <String, dynamic>{
-            'users': 4218,
-            'window': '7d',
-            'trend': <int>[3, 5, 4, 7, 6, 9, 8, 11, 10, 14, 13, 16],
-          },
-        });
+        return _scopedGroup(scopeController, 'reach', const [
+          'users',
+          'window',
+          'trend',
+        ]);
       case 'conversion':
-        return _readOnlyScope(<String, dynamic>{
-          'conversion': <String, dynamic>{
-            'rate': 18.4,
-            'unit': 'percent',
-            'delta': 2.3,
-            'comparison': 'vs last 7d',
-          },
-        });
+        return _scopedGroup(scopeController, 'conversion', const [
+          'rate',
+          'unit',
+          'delta',
+          'comparison',
+        ]);
+      case 'showcase':
+        return _scopedGroup(scopeController, 'showcase', const [
+          'mainAxisAlignment',
+          'crossAxisAlignment',
+          'children',
+          'attributes',
+        ]);
       default:
-        return _readOnlyScope(<String, dynamic>{});
+        throw ArgumentError.value(key, 'key', 'Unknown standalone card');
     }
   }
 
@@ -1196,22 +1296,11 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
     ValueChanged<Map<String, dynamic>> onChanged,
     List<PropertyPreset>? presets,
   })
-  _readOnlyScope(Map<String, dynamic> values) {
-    return (
-      values: values,
-      properties: <DynamicPropertyDefinition>[],
-      onChanged: (_) {},
-      presets: null,
-    );
-  }
-
-  ({
-    Map<String, dynamic> values,
-    List<DynamicPropertyDefinition> properties,
-    ValueChanged<Map<String, dynamic>> onChanged,
-    List<PropertyPreset>? presets,
-  })
-  _scopedGroup(String group, List<String> propertyNames) {
+  _scopedGroup(
+    DynamicPropertiesController scopeController,
+    String group,
+    List<String> propertyNames,
+  ) {
     final groupProperty = _propertyDefinition(group);
     final nested =
         groupProperty?.properties ?? const <DynamicPropertyDefinition>[];
@@ -1219,14 +1308,18 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
     final properties = nested
         .where((property) => allowed.contains(property.name))
         .toList(growable: false);
-    final values = _filteredMap(_groupValues(group), allowed);
+    final values = _filteredMap(
+      _groupValues(group, controller: scopeController),
+      allowed,
+    );
 
     return (
       values: values,
       properties: properties,
       onChanged: (updated) => setState(() {
-        final next = _groupValues(group)..addAll(updated);
-        _controller[group] = next;
+        final next = _groupValues(group, controller: scopeController)
+          ..addAll(updated);
+        scopeController[group] = next;
       }),
       presets: _scopedPresetsForGroup(group, allowed),
     );
@@ -1282,8 +1375,11 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
     return null;
   }
 
-  Map<String, dynamic> _groupValues(String group) {
-    final value = _controller[group];
+  Map<String, dynamic> _groupValues(
+    String group, {
+    DynamicPropertiesController? controller,
+  }) {
+    final value = (controller ?? _controller)[group];
     return value is Map
         ? Map<String, dynamic>.from(value)
         : <String, dynamic>{};
@@ -1369,6 +1465,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
       onToggle: () => setState(() => _previewExpanded = !_previewExpanded),
       showContainer: wide,
       selectedPropertyName: _selectedPropertyName,
+      standaloneControllers: _standaloneControllers,
       onPropertySelected: (name) =>
           setState(() => _selectedPropertyName = name),
     );

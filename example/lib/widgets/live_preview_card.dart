@@ -19,6 +19,7 @@ class LivePreviewCard extends StatefulWidget {
     this.showContainer = true,
     this.selectedPropertyName,
     this.onPropertySelected,
+    this.standaloneControllers = const {},
   });
 
   final DynamicPropertiesController controller;
@@ -30,6 +31,7 @@ class LivePreviewCard extends StatefulWidget {
   final bool showContainer;
   final String? selectedPropertyName;
   final ValueChanged<String?>? onPropertySelected;
+  final Map<String, DynamicPropertiesController> standaloneControllers;
 
   @override
   State<LivePreviewCard> createState() => _LivePreviewCardState();
@@ -43,7 +45,9 @@ class _LivePreviewCardState extends State<LivePreviewCard>
   late final AnimationController _snapController;
   Animation<double>? _snapOffsetAnimation;
 
-  DynamicPropertiesController get controller => widget.controller;
+  DynamicPropertiesController get controller =>
+      widget.standaloneControllers[widget.selectedPropertyName] ??
+      widget.controller;
   Brightness get brightness => widget.brightness;
 
   @override
@@ -405,7 +409,7 @@ class _LivePreviewCardState extends State<LivePreviewCard>
             } else if (shouldGoPrevious) {
               _selectCarouselIndex(math.max(_activeIndex - 1, 0));
             } else {
-                _animateDragOffsetToZero(_dragOffset);
+              _animateDragOffsetToZero(_dragOffset);
             }
           },
           child: LayoutBuilder(
@@ -692,6 +696,7 @@ class _LivePreviewCardState extends State<LivePreviewCard>
       _PreviewCarouselItem('Child slot', 'child', _childTile()),
       _PreviewCarouselItem('Frame', 'frame', _frameTile()),
       _PreviewCarouselItem('Metadata', 'metadata', _metaTile()),
+      _PreviewCarouselItem('Layout Showcase', 'showcase', _showcaseTile()),
     ];
   }
 
@@ -895,40 +900,57 @@ class _LivePreviewCardState extends State<LivePreviewCard>
 
   Widget _reachTile() {
     return _tile(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _tileLabel('Reach', LucideIcons.eye),
-          const SizedBox(height: 8),
-          Text(
-            '4,218',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: SoftSaaSTokens.primaryText(brightness),
-              height: 1,
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            'users · 7d',
-            style: TextStyle(
-              fontSize: 10,
-              color: SoftSaaSTokens.tertiaryText(brightness),
-            ),
-          ),
-          const SizedBox(height: 10),
-          SizedBox(
-            height: 24,
-            width: double.infinity,
-            child: _Sparkline(
-              data: const [3, 5, 4, 7, 6, 9, 8, 11, 10, 14, 13, 16],
-              color: SoftSaaSTokens.primaryColor(brightness),
-            ),
-          ),
-        ],
+      child: ListenableBuilder(
+        listenable: controller.notifierFor('reach'),
+        builder: (context, _) {
+          final users = (_toDouble(_groupGet('reach', 'users')) ?? 0).round();
+          final window = (_groupGet('reach', 'window') ?? '7d').toString();
+          final rawTrend = _groupGet('reach', 'trend');
+          final trend = rawTrend is List
+              ? rawTrend
+                    .map(_toDouble)
+                    .whereType<double>()
+                    .toList(growable: false)
+              : const <double>[];
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _tileLabel('Reach', LucideIcons.eye),
+              const SizedBox(height: 8),
+              Text(
+                users.toString().replaceAllMapped(
+                  RegExp(r'\B(?=(\d{3})+(?!\d))'),
+                  (_) => ',',
+                ),
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: SoftSaaSTokens.primaryText(brightness),
+                  height: 1,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'users · $window',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: SoftSaaSTokens.tertiaryText(brightness),
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 24,
+                width: double.infinity,
+                child: _Sparkline(
+                  data: trend.isEmpty ? const [0, 0] : trend,
+                  color: SoftSaaSTokens.primaryColor(brightness),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -1220,107 +1242,287 @@ class _LivePreviewCardState extends State<LivePreviewCard>
 
   Widget _conversionTile() {
     return _tile(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _tileLabel('Conversion', LucideIcons.trending_up),
-          const SizedBox(height: 8),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
+      child: ListenableBuilder(
+        listenable: controller.notifierFor('conversion'),
+        builder: (context, _) {
+          final rate = _toDouble(_groupGet('conversion', 'rate')) ?? 0;
+          final unit = (_groupGet('conversion', 'unit') ?? 'percent')
+              .toString();
+          final delta = _toDouble(_groupGet('conversion', 'delta')) ?? 0;
+          final comparison = (_groupGet('conversion', 'comparison') ?? '')
+              .toString();
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                '18.4',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: SoftSaaSTokens.primaryText(brightness),
-                  height: 1,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
-              ),
-              const SizedBox(width: 2),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 2),
-                child: Text(
-                  '%',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: SoftSaaSTokens.secondaryText(brightness),
+              _tileLabel('Conversion', LucideIcons.trending_up),
+              const SizedBox(height: 8),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    rate.toStringAsFixed(1),
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: SoftSaaSTokens.primaryText(brightness),
+                      height: 1,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
                   ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 2),
-          Row(
-            children: [
-              const Icon(
-                LucideIcons.arrow_up_right,
-                size: 11,
-                color: Color(0xFF10B981),
-              ),
-              const SizedBox(width: 2),
-              const Text(
-                '+2.3%',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF10B981),
-                ),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                'vs last 7d',
-                style: TextStyle(
-                  fontSize: 10,
-                  color: SoftSaaSTokens.tertiaryText(brightness),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          SizedBox(
-            height: 16,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: List.generate(12, (i) {
-                const heights = <double>[
-                  4,
-                  6,
-                  5,
-                  8,
-                  7,
-                  10,
-                  9,
-                  12,
-                  11,
-                  13,
-                  12,
-                  14,
-                ];
-                return Expanded(
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 1),
-                      child: Container(
-                        height: heights[i],
-                        decoration: BoxDecoration(
-                          color: SoftSaaSTokens.primaryColor(
-                            brightness,
-                          ).withValues(alpha: 0.4 + (i / 24)),
-                          borderRadius: BorderRadius.circular(1.5),
-                        ),
+                  const SizedBox(width: 2),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 2),
+                    child: Text(
+                      unit == 'percent' ? '%' : unit,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: SoftSaaSTokens.secondaryText(brightness),
                       ),
                     ),
                   ),
-                );
-              }),
-            ),
-          ),
-        ],
+                ],
+              ),
+              const SizedBox(height: 2),
+              Row(
+                children: [
+                  Icon(
+                    delta >= 0
+                        ? LucideIcons.arrow_up_right
+                        : LucideIcons.arrow_down_right,
+                    size: 11,
+                    color: delta >= 0
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFFEF4444),
+                  ),
+                  const SizedBox(width: 2),
+                  Text(
+                    '${delta >= 0 ? '+' : ''}${delta.toStringAsFixed(1)}%',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: delta >= 0
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFEF4444),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    comparison,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: SoftSaaSTokens.tertiaryText(brightness),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 16,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: List.generate(12, (i) {
+                    const heights = <double>[
+                      4,
+                      6,
+                      5,
+                      8,
+                      7,
+                      10,
+                      9,
+                      12,
+                      11,
+                      13,
+                      12,
+                      14,
+                    ];
+                    return Expanded(
+                      child: Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 1),
+                          child: Container(
+                            height: heights[i],
+                            decoration: BoxDecoration(
+                              color: SoftSaaSTokens.primaryColor(
+                                brightness,
+                              ).withValues(alpha: 0.4 + (i / 24)),
+                              borderRadius: BorderRadius.circular(1.5),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _showcaseTile() {
+    return _tile(
+      child: ListenableBuilder(
+        listenable: controller.notifierFor('showcase'),
+        builder: (context, _) {
+          final main = (_groupGet('showcase', 'mainAxisAlignment') ?? 'start')
+              .toString();
+          final cross =
+              (_groupGet('showcase', 'crossAxisAlignment') ?? 'center')
+                  .toString();
+          final rawChildren = _groupGet('showcase', 'children');
+          final childConfigs = rawChildren is List
+              ? rawChildren
+                    .whereType<Map>()
+                    .map((child) {
+                      return Map<String, dynamic>.from(child);
+                    })
+                    .toList(growable: false)
+              : const <Map<String, dynamic>>[];
+          final rawAttributes = _groupGet('showcase', 'attributes');
+          final attributes = rawAttributes is Map
+              ? Map<String, dynamic>.from(rawAttributes)
+              : const <String, dynamic>{};
+          final mainAlignment = switch (main) {
+            'center' => MainAxisAlignment.center,
+            'end' => MainAxisAlignment.end,
+            'spaceBetween' || 'between' => MainAxisAlignment.spaceBetween,
+            'spaceAround' || 'around' => MainAxisAlignment.spaceAround,
+            'spaceEvenly' || 'evenly' => MainAxisAlignment.spaceEvenly,
+            _ => MainAxisAlignment.start,
+          };
+          final crossAlignment = switch (cross) {
+            'start' => CrossAxisAlignment.start,
+            'end' => CrossAxisAlignment.end,
+            'stretch' => CrossAxisAlignment.stretch,
+            _ => CrossAxisAlignment.center,
+          };
+
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _tileLabel('Layout Showcase', LucideIcons.panels_top_left),
+              const SizedBox(height: 10),
+              Container(
+                width: double.infinity,
+                height: 96,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: SoftSaaSTokens.tertiaryBackground(brightness),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: SoftSaaSTokens.primaryBorder(brightness),
+                  ),
+                ),
+                child: childConfigs.isEmpty
+                    ? _emptyHint(LucideIcons.box, 'No child components')
+                    : Row(
+                        mainAxisAlignment: mainAlignment,
+                        crossAxisAlignment: crossAlignment,
+                        children: childConfigs
+                            .take(4)
+                            .map((child) {
+                              final id = child['componentId']?.toString();
+                              final rawConfig = child['config'];
+                              final config = rawConfig is Map
+                                  ? Map<String, dynamic>.from(rawConfig)
+                                  : <String, dynamic>{};
+                              return ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  maxWidth: 132,
+                                  maxHeight: 72,
+                                ),
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: id == null
+                                      ? _emptyHint(
+                                          LucideIcons.box,
+                                          'Unconfigured',
+                                        )
+                                      : _renderComponent(id, config),
+                                ),
+                              );
+                            })
+                            .toList(growable: false),
+                      ),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Icon(
+                    LucideIcons.list_tree,
+                    size: 11,
+                    color: SoftSaaSTokens.tertiaryText(brightness),
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                    'Attributes',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: SoftSaaSTokens.secondaryText(brightness),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              if (attributes.isEmpty)
+                Text(
+                  'No attributes',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: SoftSaaSTokens.tertiaryText(brightness),
+                  ),
+                )
+              else
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 5,
+                  children: attributes.entries
+                      .map((entry) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 7,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: SoftSaaSTokens.tertiaryBackground(
+                              brightness,
+                            ),
+                            borderRadius: BorderRadius.circular(5),
+                            border: Border.all(
+                              color: SoftSaaSTokens.primaryBorder(brightness),
+                            ),
+                          ),
+                          child: RichText(
+                            text: TextSpan(
+                              style: TextStyle(
+                                fontSize: 9,
+                                color: SoftSaaSTokens.tertiaryText(brightness),
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: '${entry.key}: ',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                TextSpan(text: entry.value.toString()),
+                              ],
+                            ),
+                          ),
+                        );
+                      })
+                      .toList(growable: false),
+                ),
+            ],
+          );
+        },
       ),
     );
   }

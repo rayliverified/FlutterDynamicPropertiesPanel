@@ -92,26 +92,36 @@ class DynamicPropertiesPanel extends StatefulWidget {
     this.showContainer = true,
     this.showResetButtons = true,
     this.showBreadcrumbs = true,
+    this.emptyWidget,
     this.smartLayout = false,
     this.manager,
     this.depth = 0,
   }) : assert(
-         controller != null || values != null,
-         'Either controller or values must be provided',
+         controller == null || values == null,
+         'controller and values are mutually exclusive',
+       ),
+       assert(
+         controller != null || values != null || properties != null,
+         'Provide controller, values, or properties',
        );
 
   /// External controller. When provided, the panel does not own its
   /// lifecycle — the caller must dispose it.
   final DynamicPropertiesController? controller;
 
-  /// Initial values. Used only when [controller] is null — the panel creates
-  /// an internal controller seeded from this map.
+  /// Values for the internally owned controller. These override matching
+  /// [DynamicPropertyDefinition.defaultValue] entries from [properties].
+  /// Mutually exclusive with [controller].
   final Map<String, dynamic>? values;
 
   /// Called on **committed** changes (drag end, preset applied, etc.).
   /// Does NOT fire during drag ticks. Emits a deep-copied snapshot.
   final ValueChanged<Map<String, dynamic>>? onChanged;
 
+  /// Optional control schema. When supplied, it is authoritative (including
+  /// an empty list). When omitted, a basic schema is inferred from state.
+  /// If no [controller] or [values] are supplied, defaults from this schema
+  /// initialize an internally owned controller.
   final List<DynamicPropertyDefinition>? properties;
 
   /// Named presets for the root-level component.
@@ -136,6 +146,10 @@ class DynamicPropertiesPanel extends StatefulWidget {
   final bool showContainer;
   final bool showResetButtons;
   final bool showBreadcrumbs;
+
+  /// Widget shown when the resolved property schema is empty. Defaults to a
+  /// centered "No editable properties" message.
+  final Widget? emptyWidget;
 
   /// When true, compact-width controls (integer, double, string, color,
   /// enum, date, duration, icon, boolean) may share a row with an adjacent
@@ -213,14 +227,34 @@ class _DynamicPropertiesPanelState extends State<DynamicPropertiesPanel>
   /// Attach the active controller — external or newly-created — and subscribe
   /// to its commits stream to power the Map-based [widget.onChanged] callback.
   void _attachController() {
+    final defaults = _propertyDefaults(widget.properties);
     if (widget.controller != null) {
       _controller = widget.controller!;
       _ownsController = false;
+      final missingDefaults = <String, dynamic>{
+        for (final entry in defaults.entries)
+          if (!_controller.hasValue(entry.key)) entry.key: entry.value,
+      };
+      if (missingDefaults.isNotEmpty) {
+        _controller.applyAllSilent(missingDefaults);
+      }
     } else {
-      _controller = DynamicPropertiesController(initial: widget.values ?? {});
+      _controller = DynamicPropertiesController(
+        initial: <String, dynamic>{...defaults, ...?widget.values},
+      );
       _ownsController = true;
     }
     _commitsSub = _controller.commits.listen(_onControllerCommit);
+  }
+
+  Map<String, dynamic> _propertyDefaults(
+    List<DynamicPropertyDefinition>? properties,
+  ) {
+    if (properties == null) return const <String, dynamic>{};
+    return <String, dynamic>{
+      for (final property in properties)
+        if (property.defaultValue != null) property.name: property.defaultValue,
+    };
   }
 
   /// Called whenever the controller emits a committed change. Mirrors the
@@ -887,13 +921,17 @@ class _DynamicPropertiesPanelState extends State<DynamicPropertiesPanel>
               const SizedBox(height: 12),
             ],
             if (properties.isEmpty)
-              Text(
-                'No editable properties',
-                style: TextStyle(
-                  fontSize: SoftSaaSTokens.fontSizeXS,
-                  color: SoftSaaSTokens.tertiaryText(brightness),
-                ),
-              )
+              widget.emptyWidget ??
+                  Center(
+                    child: Text(
+                      'No editable properties',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: SoftSaaSTokens.fontSizeXS,
+                        color: SoftSaaSTokens.tertiaryText(brightness),
+                      ),
+                    ),
+                  )
             else
               ..._buildPropertyRowWidgets(properties, availableWidth),
           ],
@@ -981,7 +1019,9 @@ class _DynamicPropertiesPanelState extends State<DynamicPropertiesPanel>
   // ── Property Resolution ──────────────────────────────────────────
 
   List<DynamicPropertyDefinition> _resolveProperties() {
-    if (widget.properties != null && widget.properties!.isNotEmpty) {
+    // A non-null schema is authoritative, including an explicitly empty one.
+    // Only infer controls when the caller omits [properties] altogether.
+    if (widget.properties != null) {
       return widget.properties!;
     }
     // Infer from currently-touched keys in the controller.
