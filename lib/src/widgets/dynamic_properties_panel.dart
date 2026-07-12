@@ -681,10 +681,21 @@ class _DynamicPropertiesPanelState extends State<DynamicPropertiesPanel>
       _nav.replaceTop(currentLevel.copyWith(value: updatedConfig));
     }
 
-    _controller.setValue(parameterName, {
-      'componentId': componentId,
-      'config': updatedConfig,
-    });
+    final updatedSlot = {'componentId': componentId, 'config': updatedConfig};
+    final listItemMatch = RegExp(r'^(.+)\[(\d+)\]$').firstMatch(parameterName);
+    if (listItemMatch != null) {
+      final listName = listItemMatch.group(1)!;
+      final index = int.parse(listItemMatch.group(2)!);
+      final current = _controller[listName];
+      if (current is List && index < current.length) {
+        final updatedList = List<dynamic>.from(current);
+        updatedList[index] = updatedSlot;
+        _controller.setValue(listName, updatedList);
+      }
+      return;
+    }
+
+    _controller.setValue(parameterName, updatedSlot);
   }
 
   // ── Preset management ────────────────────────────────────────────────
@@ -1030,20 +1041,10 @@ class _DynamicPropertiesPanelState extends State<DynamicPropertiesPanel>
           } else {
             row = const SizedBox.shrink();
           }
-        } else if (property.kind == DynamicPropertyKind.widgetList &&
-            widget.depth < 3) {
-          final count = displayValue is List ? displayValue.length : 0;
-          row = _ExpandablePropertyRow(
-            title: property.label,
-            subtitle: '$count widget${count == 1 ? '' : 's'}',
-            isModified: isModified,
-            onReset:
-                widget.showResetButtons && _controller.hasValue(property.name)
-                ? () => _setValue(property.name, property.defaultValue)
-                : null,
-            defaultOpen: false,
-            child: _buildControl(property, displayValue),
-          );
+        } else if (property.kind == DynamicPropertyKind.widgetList) {
+          // The shared list shell owns the label, count, add, reorder, and
+          // remove affordances, so do not wrap it in a duplicate property row.
+          row = _buildControl(property, displayValue);
         } else {
           final control = _buildControl(property, displayValue);
           row = Column(

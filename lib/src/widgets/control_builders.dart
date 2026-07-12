@@ -360,37 +360,43 @@ extension _DppStateControlBuilders on _DynamicPropertiesPanelState {
     dynamic value,
   ) {
     final listValue = value is List ? List<dynamic>.from(value) : <dynamic>[];
+    final maximum = (property.bounds?['maximum'] as num?)?.toInt();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        ...listValue.asMap().entries.map((entry) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 6),
-            child: ComponentSlotControl(
-              value: entry.value,
-              parameterName: '${property.name}[${entry.key}]',
-              allowNull: true,
-              manager: _manager,
-              onChanged: (updated) {
-                final newList = List<dynamic>.from(listValue);
-                newList[entry.key] = updated;
-                _setValue(property.name, newList);
-              },
-            ),
-          );
-        }),
-        TextButton.icon(
-          onPressed: () => _setValue(property.name, [...listValue, null]),
-          icon: const Icon(Icons.add, size: 14),
-          label: const Text('Add widget', style: TextStyle(fontSize: 11)),
-          style: TextButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            minimumSize: Size.zero,
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
+    // Editable List<Widget> values use the shared list shell. Reserve a plain
+    // Column of ComponentSlotControls for a fixed set of distinct widget slots
+    // that are not an editable list.
+    return SoftSaaSReorderableList(
+      title: property.label,
+      itemCount: listValue.length,
+      onAdd: maximum == null || listValue.length < maximum
+          ? () => _setValue(property.name, [...listValue, null])
+          : null,
+      onReorder: (oldIndex, newIndex) {
+        final updated = List<dynamic>.from(listValue);
+        if (newIndex > oldIndex) newIndex--;
+        final item = updated.removeAt(oldIndex);
+        updated.insert(newIndex, item);
+        _setValue(property.name, updated);
+      },
+      itemBuilder: (context, index) => SoftSaaSReorderableListItem(
+        key: ValueKey('${property.name}_$index'),
+        index: index,
+        onRemove: () {
+          final updated = List<dynamic>.from(listValue)..removeAt(index);
+          _setValue(property.name, updated);
+        },
+        child: ComponentSlotControl(
+          value: listValue[index],
+          parameterName: '${property.name}[$index]',
+          allowNull: true,
+          manager: _manager,
+          onChanged: (updatedValue) {
+            final updated = List<dynamic>.from(listValue);
+            updated[index] = updatedValue;
+            _setValue(property.name, updated);
+          },
         ),
-      ],
+      ),
     );
   }
 
