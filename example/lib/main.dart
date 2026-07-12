@@ -2,8 +2,10 @@ import 'package:dynamic_properties_panel/dynamic_properties_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:dynamic_properties_panel/soft_saas_ui/soft_saas_ui.dart';
 
+import 'architecture/feature_block.dart';
+import 'architecture/live_preview_card.dart';
+import 'architecture/storyboard_state_registry.dart';
 import 'widgets/json_card.dart';
-import 'widgets/live_preview_card.dart';
 import 'widgets/top_bar.dart';
 
 void main() {
@@ -51,10 +53,18 @@ class ExampleHomePage extends StatefulWidget {
 }
 
 class _ExampleHomePageState extends State<ExampleHomePage> {
-  /// Authoritative shared state. Both the panel and the preview bind to
-  /// this — that's how bidirectional sync works.
+  /// Panel-side state holder. The *screen* State is the authoritative UI
+  /// state; this controller is the panel/JSON representation of it. The two
+  /// are kept in sync bidirectionally through [StoryboardStateRegistry].
   late final DynamicPropertiesController _controller;
-  late final Map<String, DynamicPropertiesController> _standaloneControllers;
+
+  /// Semantic IDs → GlobalKeys. The screen gets its key from here and never
+  /// imports any tooling; the panel reaches the live State through it.
+  final StoryboardStateRegistry _registry = StoryboardStateRegistry.instance;
+  static const _kScreenId = 'example.featureBlock';
+
+  /// Re-entrancy guard for the screen → controller direction.
+  bool _pushingFromScreen = false;
   late List<DynamicPropertyDefinition> _properties;
   late List<PropertyPreset> _presets;
   late Map<String, List<PropertyPreset>> _componentPresets;
@@ -784,6 +794,12 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
     };
     _controller = DynamicPropertiesController(initial: initialValues);
 
+    // Panel → screen: any controller write (panel control, JSON edit,
+    // preset apply) is mapped onto the live screen State's typed fields via
+    // the registry. registry.update wraps the mutation in the State's own
+    // setState.
+    _controller.addListener(_onControllerChanged);
+
     _properties = DynamicPropertyDefinition.listFromJson([
       // ── CTA ──────────────────────────────────────────────────────
       {
@@ -1136,33 +1152,41 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
       },
     ]);
 
-    const standaloneKeys = <String>[
-      'cta',
-      'reach',
-      'audience',
-      'conversion',
-      'appearance',
-      'rolloutPercentage',
-      'rollout',
-      'tags',
-      'child',
-      'frame',
-      'metadata',
-      'showcase',
-    ];
-    _standaloneControllers = <String, DynamicPropertiesController>{
-      for (final key in standaloneKeys)
-        key: DynamicPropertiesController(initial: _controller.snapshot()),
-    };
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_onControllerChanged);
     _controller.dispose();
-    for (final controller in _standaloneControllers.values) {
-      controller.dispose();
-    }
+    _registry.remove(_kScreenId);
     super.dispose();
+  }
+
+  // ── Bidirectional sync bridge ─────────────────────────────────────
+
+  /// Panel/JSON/preset write → live FeatureBlock State fields (via the
+  /// registry), plus a rebuild so the standalone preview cards re-read the
+  /// controller values.
+  void _onControllerChanged() {
+    if (!_pushingFromScreen) {
+      _registry.update<FeatureBlockState>(
+        _kScreenId,
+        (state) => state.applyValues(_controller.snapshotShallow()),
+      );
+    }
+    if (mounted) setState(() {});
+  }
+
+  /// Component-internal interaction (slider drag, switch toggle) →
+  /// controller, so the panel and JSON card reflect it. Guarded so we don't
+  /// echo the values straight back into the component's setState.
+  void _onFeatureBlockChanged(Map<String, dynamic> values) {
+    _pushingFromScreen = true;
+    try {
+      _controller.applyAll(values);
+    } finally {
+      _pushingFromScreen = false;
+    }
   }
 
   Widget _buildPropertiesEditor({required bool wide}) {
@@ -1212,10 +1236,9 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
     List<PropertyPreset>? presets,
   })
   _scopedPropertiesFor(String key) {
-    final scopeController = _standaloneControllers[key]!;
     switch (key) {
       case 'cta':
-        return _scopedGroup(scopeController, 'cta', const [
+        return _scopedGroup('cta', const [
           'title',
           'fontSize',
           'lineHeight',
@@ -1225,26 +1248,26 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
           'labelStyle',
         ]);
       case 'audience':
-        return _scopedGroup(scopeController, 'targeting', const ['audiences']);
+        return _scopedGroup('targeting', const ['audiences']);
       case 'appearance':
-        return _scopedGroup(scopeController, 'appearance', const [
+        return _scopedGroup('appearance', const [
           'layout',
           'padding',
           'cornerRadius',
           'animDuration',
         ]);
       case 'rolloutPercentage':
-        return _scopedGroup(scopeController, 'schedule', const [
+        return _scopedGroup('schedule', const [
           'rolloutPercentage',
         ]);
       case 'rollout':
-        return _scopedGroup(scopeController, 'schedule', const ['rollout']);
+        return _scopedGroup('schedule', const ['rollout']);
       case 'tags':
-        return _scopedGroup(scopeController, 'targeting', const ['tags']);
+        return _scopedGroup('targeting', const ['tags']);
       case 'child':
-        return _scopedGroup(scopeController, 'slot', const ['child']);
+        return _scopedGroup('slot', const ['child']);
       case 'frame':
-        return _scopedGroup(scopeController, 'slot', const [
+        return _scopedGroup('slot', const [
           'frameSize',
           'rotation',
           'sizeConstraints',
@@ -1254,30 +1277,30 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
       case 'metadata':
         final property = _propertyDefinition('metadata');
         return (
-          values: <String, dynamic>{'metadata': scopeController['metadata']},
+          values: <String, dynamic>{'metadata': _controller['metadata']},
           properties: property == null
               ? <DynamicPropertyDefinition>[]
               : [property],
           onChanged: (updated) => setState(() {
-            scopeController['metadata'] = updated['metadata'];
+            _controller['metadata'] = updated['metadata'];
           }),
           presets: _scopedPresetsForTopLevel('metadata'),
         );
       case 'reach':
-        return _scopedGroup(scopeController, 'reach', const [
+        return _scopedGroup('reach', const [
           'users',
           'window',
           'trend',
         ]);
       case 'conversion':
-        return _scopedGroup(scopeController, 'conversion', const [
+        return _scopedGroup('conversion', const [
           'rate',
           'unit',
           'delta',
           'comparison',
         ]);
       case 'showcase':
-        return _scopedGroup(scopeController, 'showcase', const [
+        return _scopedGroup('showcase', const [
           'mainAxisAlignment',
           'crossAxisAlignment',
           'children',
@@ -1294,11 +1317,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
     ValueChanged<Map<String, dynamic>> onChanged,
     List<PropertyPreset>? presets,
   })
-  _scopedGroup(
-    DynamicPropertiesController scopeController,
-    String group,
-    List<String> propertyNames,
-  ) {
+  _scopedGroup(String group, List<String> propertyNames) {
     final groupProperty = _propertyDefinition(group);
     final nested =
         groupProperty?.properties ?? const <DynamicPropertyDefinition>[];
@@ -1306,18 +1325,14 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
     final properties = nested
         .where((property) => allowed.contains(property.name))
         .toList(growable: false);
-    final values = _filteredMap(
-      _groupValues(group, controller: scopeController),
-      allowed,
-    );
+    final values = _filteredMap(_groupValues(group), allowed);
 
     return (
       values: values,
       properties: properties,
       onChanged: (updated) => setState(() {
-        final next = _groupValues(group, controller: scopeController)
-          ..addAll(updated);
-        scopeController[group] = next;
+        final next = _groupValues(group)..addAll(updated);
+        _controller[group] = next;
       }),
       presets: _scopedPresetsForGroup(group, allowed),
     );
@@ -1373,11 +1388,8 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
     return null;
   }
 
-  Map<String, dynamic> _groupValues(
-    String group, {
-    DynamicPropertiesController? controller,
-  }) {
-    final value = (controller ?? _controller)[group];
+  Map<String, dynamic> _groupValues(String group) {
+    final value = _controller[group];
     return value is Map
         ? Map<String, dynamic>.from(value)
         : <String, dynamic>{};
@@ -1452,10 +1464,21 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
       onValuesChanged: selectedScope?.onChanged,
     );
 
-    // Preview — desktop keeps the panel chrome; mobile uses the raw fitted
-    // preview so the sheet is the only container on screen.
+    // The production component under test: no controller in the
+    // constructor — its State holds the variables, and the storyboard
+    // registry supplies its GlobalKey from the outside.
+    final featureBlock = FeatureBlock(
+      key: _registry.key<FeatureBlockState>(_kScreenId),
+      initialValues: _controller.snapshotShallow(),
+      brightness: brightness,
+      onStateChanged: _onFeatureBlockChanged,
+    );
+
+    // Tooling chrome: hosts the component plus per-tile standalone cards
+    // rendered from the controller's grouped values.
     final previewCard = LivePreviewCard(
-      controller: _controller,
+      values: _controller.snapshotShallow(),
+      featureBlock: featureBlock,
       brightness: brightness,
       expandBody: wide,
       collapsible: false,
@@ -1463,9 +1486,9 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
       onToggle: () => setState(() => _previewExpanded = !_previewExpanded),
       showContainer: wide,
       selectedPropertyName: _selectedPropertyName,
-      standaloneControllers: _standaloneControllers,
       onPropertySelected: (name) =>
           setState(() => _selectedPropertyName = name),
+      onValuesChanged: (values) => _controller.applyAll(values),
     );
 
     return Scaffold(
