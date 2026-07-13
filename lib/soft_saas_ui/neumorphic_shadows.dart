@@ -7,6 +7,7 @@
 /// 1. Outer drop shadow - creates elevation
 /// 2. Inner top highlight - creates embossed effect
 /// 3. Inner bottom shadow - creates depth
+library;
 
 import 'package:flutter/material.dart';
 

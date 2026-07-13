@@ -2,6 +2,7 @@
 ///
 /// This file combines all design tokens, typography, and shadows into
 /// a complete Flutter ThemeData configuration.
+library;
 
 import 'package:flutter/material.dart';
 import 'design_tokens.dart';

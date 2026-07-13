@@ -442,8 +442,9 @@ class _SoftSaaSIconButtonState extends State<SoftSaaSIconButton> {
   }
 
   Color _getIconColor(Brightness brightness) {
-    if (_isHovered && widget.hoverIconColor != null)
+    if (_isHovered && widget.hoverIconColor != null) {
       return widget.hoverIconColor!;
+    }
     if (widget.iconColor != null) return widget.iconColor!;
 
     switch (widget.variant) {

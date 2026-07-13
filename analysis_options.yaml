@@ -9,6 +9,4 @@ analyzer:
 
 linter:
   rules:
-    curly_braces_in_flow_control_structures: false
-    dangling_library_doc_comments: false
     unnecessary_library_name: false

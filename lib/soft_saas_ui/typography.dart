@@ -2,6 +2,7 @@
 ///
 /// This file defines the typography styles used throughout the Soft SaaS UI
 /// design system, matching the React/TypeScript implementation.
+library;
 
 import 'package:flutter/material.dart';
 import 'design_tokens.dart';

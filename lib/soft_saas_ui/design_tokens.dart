@@ -3,6 +3,7 @@
 /// This file contains all design tokens extracted from the React/TypeScript
 /// soft_saas_ui design system. These tokens ensure visual consistency across
 /// all components.
+library;
 
 import 'package:flutter/material.dart';
 
