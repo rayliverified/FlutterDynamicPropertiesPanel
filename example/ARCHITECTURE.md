@@ -304,6 +304,9 @@ pure-assign + describe out of the notifying methods, then let the generic layer 
    widget-tree markers + frame dimensions before accepting any capture.
 2. One storyboard item per screen; every stable variant/state combination is a persisted
    preset. No per-state routes — they sidestep the variant/preset model.
+   Every review item also carries a **named preset with id `default`** — the
+   `*.default.json` defaults file is a values bucket, not driver-addressable, so
+   without it `select_story` has no default story to land on.
 3. Driver `select_story` without a preset lands on the `default` preset; showcase views
    reject component capture outright (UI clicks still show the showcase).
 4. Offscreen capture (own BuildOwner/PipelineOwner/RenderView, FIFO on the UI thread)
