@@ -214,3 +214,107 @@ re-entrancy break.
 Future complex pages (lists of repeated components, async loading states, multi-screen
 flows) will extend this pattern — instance IDs for repeated components and per-screen
 registry entries are the intended growth path.
+
+---
+
+# v2 — The generic staging layer
+
+Validated in production (NOCD linked-account screens) and hardened by an independent
+architecture review, v2 replaces per-screen tooling plumbing with one generic layer.
+Nothing about how UI is built changes: state is still ordinary variables declared on the
+StatefulWidget's State. Everything below hooks into the Flutter framework; none of it
+replaces it.
+
+## Layer map
+
+```text
+AI / MCP / properties panel
+        │  stage_state · read_state · list_state_targets   (generic commands)
+        ▼
+StoryboardStageRegistry        one typed adapter per screen, registered at APP STARTUP
+        │  apply(state, values) — pure   ·   read(state) — ground truth
+        ▼
+StoryboardStateRegistry        semantic ID → GlobalKey (screens only)
+        │  GlobalKey.currentState
+        ▼
+Screen State                   plain typed fields · plain setState
+        │  constructor data ↓ / callbacks ↑ / findAncestorStateOfType for in-tree lookup
+        ▼
+Stateless children & nested components
+```
+
+## What each built-in Flutter mechanism is for
+
+| Mechanism | Role in this architecture |
+|---|---|
+| Public `State` + `GlobalKey.currentState` | THE staging primitive: external, typed, live read/write |
+| `context.findAncestorStateOfType<T>()` | In-tree child→screen coordination (children never need keys for this) |
+| `InheritedWidget` / `InheritedModel` | Downward dependency injection (fake services/fixtures in storyboard wrappers) — not state addressing |
+| Restoration framework | Actual persistence needs only — never repurposed as a tooling registry |
+| Element-tree APIs | Diagnostics (widget tree, capture) — never deterministic staging |
+
+## Stage adapters (kills the per-screen wrapper code)
+
+One adapter per stageable screen, registered ONCE at startup — never from widget
+lifecycle. That decoupling eliminated an entire class of races where a driver property
+existed only while its registering wrapper happened to be mounted.
+
+```dart
+stageTarget<ProfileSwitcherPageState>(
+  id: 'linkedAccount.profileSwitcher.default',
+  apply: (state, values) { /* pure field assignment only */ },
+  read: (state) => { /* typed ground truth */ },
+  afterApply: (state, values) { /* post-frame, may self-notify */ },
+)
+```
+
+The generic layer owns: mount lookup, mounted checks, wrapping `apply` in the target's
+own `setState`, post-frame `afterApply`, error shapes, JSON, introspection
+(`list_state_targets`). The screen owns only its semantic ID and the typed mapping.
+Unmounted target ⇒ clean `"not mounted"` — never `"unknown"`.
+
+### The apply-mode rule (codified, not conventional)
+
+`apply` is **pure field assignment**: no `setState`, no `notifyListeners`, no
+self-notifying setters. Anything that must run after the staged frame (form
+revalidation, focus, scroll) goes in `afterApply`, which runs post-frame outside
+`setState`. This is what makes staging safe to wrap in the target's `setState`.
+
+## Legacy state machines: the DefaultStateMixin pattern
+
+Existing mixins with built-in behaviors are decomposed into two layers rather than
+rewritten:
+
+- **Self-notifying layer** (unchanged, production keeps using it): `setLoading()`,
+  `setLoaded()`, `setError()` — resolve the machine and call `setState` themselves.
+- **Pure staging layer** (added): `stageDataState(state, {errorMessage})` assigns
+  `state`/`loading`/`errorMessage`/`loadingVisibility` as one consistent unit, never
+  notifies, and resolves animations immediately (deterministic capture frames).
+  `describeDataState()` is the readback half.
+
+The stage registry then handles the machine **generically**: any target whose State uses
+the mixin accepts `{"dataState": "loading" | "loaded" | "error", "errorMessage": ...}`
+and includes the machine snapshot in every read — zero adapter code per screen for it.
+This is the template for rolling any legacy self-notifying mixin into the system: split
+pure-assign + describe out of the notifying methods, then let the generic layer speak it.
+
+## Capture integrity rules (learned the hard way)
+
+1. Never trust route/selection metadata — verify via `read_state` ground truth +
+   widget-tree markers + frame dimensions before accepting any capture.
+2. One storyboard item per screen; every stable variant/state combination is a persisted
+   preset. No per-state routes — they sidestep the variant/preset model.
+3. Driver `select_story` without a preset lands on the `default` preset; showcase views
+   reject component capture outright (UI clicks still show the showcase).
+4. Offscreen capture (own BuildOwner/PipelineOwner/RenderView, FIFO on the UI thread)
+   resolves targets through the same variant/preset pipeline and reports per-target
+   errors; beware `ScrollAwareImageProvider` + ImageCache poisoning in detached trees.
+
+## Production-side contract (the whole ask of app code)
+
+1. Public State class; ordinary typed fields; plain `setState`.
+2. Honest constructor params for side-effect gating (`autoLoad`, and for IO-heavy pages
+   split flags: `autoConnectRealtime`, `autoPromptPermissions`,
+   `autoRefreshOnLifecycle`) — never one flag overloaded to mean "disable everything".
+3. Nested stateful children: parent owns the key, exposes a typed accessor.
+4. Zero tooling imports. Keys arrive from outside via `super.key`.
